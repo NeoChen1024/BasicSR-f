@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=61", "wheel", "torch"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "basicsr"
+dynamic = ["version"]
+description = "Open Source Image and Video Super-Resolution Toolbox"
+readme = "README.md"
+license = {text = "Apache License 2.0"}
+authors = [
+    {name = "Xintao Wang", email = "xintao.wang@outlook.com"},
+]
+keywords = ["computer vision", "restoration", "super resolution"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "addict",
+    "future",
+    "lmdb",
+    "numpy>=1.17",
+    "opencv-python",
+    "Pillow",
+    "pyyaml",
+    "requests",
+    "scikit-image",
+    "scipy",
+    "tb-nightly",
+    "torch>=2.0",
+    "torchvision",
+    "tqdm",
+    "yapf",
+]
+
+[project.urls]
+Homepage = "https://github.com/xinntao/BasicSR"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["options", "datasets", "experiments", "results", "tb_logger", "wandb"]
+
+[tool.setuptools.package-data]
+basicsr = ["metrics/*.npz"]
+
+[tool.flake8]
+ignore = ["W503", "W504"]
+max-line-length = 120
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+blank_line_before_nested_class_or_def = true
+split_before_expression_after_opening_paren = true
+
+[tool.isort]
+line_length = 120
+multi_line_output = 0
+known_standard_library = ["pkg_resources", "setuptools"]
+known_first_party = ["basicsr"]
+known_third_party = ["PIL", "cv2", "lmdb", "numpy", "pytest", "requests", "scipy", "skimage", "torch", "torchvision", "tqdm", "yaml"]
+no_lines_before = ["STDLIB", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
+
+[tool.codespell]
+skip = ".git,./docs/build,*.cfg"
+count = ""
+quiet-level = 3
+ignore-words-list = "gool"
+
+[tool.pytest.ini_options]
+addopts = "tests/"
