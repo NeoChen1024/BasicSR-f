@@ -19,21 +19,21 @@ class ESRGANModel(SRGANModel):
 
         l_g_total = 0
         loss_dict = OrderedDict()
-        if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
+        if current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters:
             # pixel loss
             if self.cri_pix:
                 l_g_pix = self.cri_pix(self.output, self.gt)
                 l_g_total += l_g_pix
-                loss_dict['l_g_pix'] = l_g_pix
+                loss_dict["l_g_pix"] = l_g_pix
             # perceptual loss
             if self.cri_perceptual:
                 l_g_percep, l_g_style = self.cri_perceptual(self.output, self.gt)
                 if l_g_percep is not None:
                     l_g_total += l_g_percep
-                    loss_dict['l_g_percep'] = l_g_percep
+                    loss_dict["l_g_percep"] = l_g_percep
                 if l_g_style is not None:
                     l_g_total += l_g_style
-                    loss_dict['l_g_style'] = l_g_style
+                    loss_dict["l_g_style"] = l_g_style
             # gan loss (relativistic gan)
             real_d_pred = self.net_d(self.gt).detach()
             fake_g_pred = self.net_d(self.output)
@@ -42,7 +42,7 @@ class ESRGANModel(SRGANModel):
             l_g_gan = (l_g_real + l_g_fake) / 2
 
             l_g_total += l_g_gan
-            loss_dict['l_g_gan'] = l_g_gan
+            loss_dict["l_g_gan"] = l_g_gan
 
             l_g_total.backward()
             self.optimizer_g.step()
@@ -72,10 +72,10 @@ class ESRGANModel(SRGANModel):
         l_d_fake.backward()
         self.optimizer_d.step()
 
-        loss_dict['l_d_real'] = l_d_real
-        loss_dict['l_d_fake'] = l_d_fake
-        loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
-        loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
+        loss_dict["l_d_real"] = l_d_real
+        loss_dict["l_d_fake"] = l_d_fake
+        loss_dict["out_d_real"] = torch.mean(real_d_pred.detach())
+        loss_dict["out_d_fake"] = torch.mean(fake_d_pred.detach())
 
         self.log_dict = self.reduce_loss_dict(loss_dict)
 

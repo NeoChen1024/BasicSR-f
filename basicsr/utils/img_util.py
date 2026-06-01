@@ -21,8 +21,8 @@ def img2tensor(imgs, bgr2rgb=True, float32=True):
 
     def _totensor(img, bgr2rgb, float32):
         if img.shape[2] == 3 and bgr2rgb:
-            if img.dtype == 'float64':
-                img = img.astype('float32')
+            if img.dtype == "float64":
+                img = img.astype("float32")
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = torch.from_numpy(img.transpose(2, 0, 1))
         if float32:
@@ -57,7 +57,7 @@ def tensor2img(tensor, rgb2bgr=True, out_type=np.uint8, min_max=(0, 1)):
         shape (H x W). The channel order is BGR.
     """
     if not (torch.is_tensor(tensor) or (isinstance(tensor, list) and all(torch.is_tensor(t) for t in tensor))):
-        raise TypeError(f'tensor or list of tensors expected, got {type(tensor)}')
+        raise TypeError(f"tensor or list of tensors expected, got {type(tensor)}")
 
     if torch.is_tensor(tensor):
         tensor = [tensor]
@@ -83,7 +83,7 @@ def tensor2img(tensor, rgb2bgr=True, out_type=np.uint8, min_max=(0, 1)):
         elif n_dim == 2:
             img_np = _tensor.numpy()
         else:
-            raise TypeError(f'Only support 4D, 3D or 2D tensor. But received with dimension: {n_dim}')
+            raise TypeError(f"Only support 4D, 3D or 2D tensor. But received with dimension: {n_dim}")
         if out_type == np.uint8:
             # Unlike MATLAB, numpy.unit8() WILL NOT round by default.
             img_np = (img_np * 255.0).round()
@@ -111,7 +111,7 @@ def tensor2img_fast(tensor, rgb2bgr=True, min_max=(0, 1)):
     return output
 
 
-def imfrombytes(content, flag='color', float32=False):
+def imfrombytes(content, flag="color", float32=False):
     """Read an image from bytes.
 
     Args:
@@ -125,10 +125,10 @@ def imfrombytes(content, flag='color', float32=False):
         ndarray: Loaded image array.
     """
     img_np = np.frombuffer(content, np.uint8)
-    imread_flags = {'color': cv2.IMREAD_COLOR, 'grayscale': cv2.IMREAD_GRAYSCALE, 'unchanged': cv2.IMREAD_UNCHANGED}
+    imread_flags = {"color": cv2.IMREAD_COLOR, "grayscale": cv2.IMREAD_GRAYSCALE, "unchanged": cv2.IMREAD_UNCHANGED}
     img = cv2.imdecode(img_np, imread_flags[flag])
     if float32:
-        img = img.astype(np.float32) / 255.
+        img = img.astype(np.float32) / 255.0
     return img
 
 
@@ -150,7 +150,7 @@ def imwrite(img, file_path, params=None, auto_mkdir=True):
         os.makedirs(dir_name, exist_ok=True)
     ok = cv2.imwrite(file_path, img, params)
     if not ok:
-        raise IOError('Failed in writing images.')
+        raise IOError("Failed in writing images.")
 
 
 def crop_border(imgs, crop_border):

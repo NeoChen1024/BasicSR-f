@@ -63,7 +63,7 @@ def calc_mean_std(feat, eps=1e-5):
             divide-by-zero. Default: 1e-5.
     """
     size = feat.size()
-    assert len(size) == 4, 'The input feature should be 4D tensor.'
+    assert len(size) == 4, "The input feature should be 4D tensor."
     n, c = size[:2]
     feat_var = feat.view(n, c, -1).var(dim=2) + eps
     feat_std = feat_var.sqrt().view(n, c, 1, 1)
@@ -90,8 +90,10 @@ def adaptive_instance_normalization(content_feat, style_feat):
 
 def AttentionBlock(in_channel):
     return nn.Sequential(
-        spectral_norm(nn.Conv2d(in_channel, in_channel, 3, 1, 1)), nn.LeakyReLU(0.2, True),
-        spectral_norm(nn.Conv2d(in_channel, in_channel, 3, 1, 1)))
+        spectral_norm(nn.Conv2d(in_channel, in_channel, 3, 1, 1)),
+        nn.LeakyReLU(0.2, True),
+        spectral_norm(nn.Conv2d(in_channel, in_channel, 3, 1, 1)),
+    )
 
 
 def conv_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, bias=True):
@@ -106,7 +108,9 @@ def conv_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, b
                 stride=stride,
                 dilation=dilation,
                 padding=((kernel_size - 1) // 2) * dilation,
-                bias=bias)),
+                bias=bias,
+            )
+        ),
         nn.LeakyReLU(0.2),
         spectral_norm(
             nn.Conv2d(
@@ -116,7 +120,9 @@ def conv_block(in_channels, out_channels, kernel_size=3, stride=1, dilation=1, b
                 stride=stride,
                 dilation=dilation,
                 padding=((kernel_size - 1) // 2) * dilation,
-                bias=bias)),
+                bias=bias,
+            )
+        ),
     )
 
 
@@ -130,13 +136,8 @@ class MSDilationBlock(nn.Module):
         for i in range(4):
             self.conv_blocks.append(conv_block(in_channels, in_channels, kernel_size, dilation=dilation[i], bias=bias))
         self.conv_fusion = spectral_norm(
-            nn.Conv2d(
-                in_channels * 4,
-                in_channels,
-                kernel_size=kernel_size,
-                stride=1,
-                padding=(kernel_size - 1) // 2,
-                bias=bias))
+            nn.Conv2d(in_channels * 4, in_channels, kernel_size=kernel_size, stride=1, padding=(kernel_size - 1) // 2, bias=bias)
+        )
 
     def forward(self, x):
         out = []

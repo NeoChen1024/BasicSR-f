@@ -5,15 +5,16 @@ import torch
 from torch.autograd import Function
 from torch.nn import functional as F
 
-BASICSR_JIT = os.getenv('BASICSR_JIT')
-if BASICSR_JIT == 'True':
+BASICSR_JIT = os.getenv("BASICSR_JIT")
+if BASICSR_JIT == "True":
     from torch.utils.cpp_extension import load
+
     module_path = os.path.dirname(__file__)
     upfirdn2d_ext = load(
-        'upfirdn2d',
+        "upfirdn2d",
         sources=[
-            os.path.join(module_path, 'src', 'upfirdn2d.cpp'),
-            os.path.join(module_path, 'src', 'upfirdn2d_kernel.cu'),
+            os.path.join(module_path, "src", "upfirdn2d.cpp"),
+            os.path.join(module_path, "src", "upfirdn2d_kernel.cu"),
         ],
     )
 else:
@@ -71,7 +72,7 @@ class UpFirDn2dBackward(Function):
 
     @staticmethod
     def backward(ctx, gradgrad_input):
-        kernel, = ctx.saved_tensors
+        (kernel,) = ctx.saved_tensors
 
         gradgrad_input = gradgrad_input.reshape(-1, ctx.in_size[2], ctx.in_size[3], 1)
 
@@ -151,7 +152,7 @@ class UpFirDn2d(Function):
 
 
 def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
-    if input.device.type == 'cpu':
+    if input.device.type == "cpu":
         out = upfirdn2d_native(input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1])
     else:
         out = UpFirDn2d.apply(input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1]))
@@ -171,7 +172,12 @@ def upfirdn2d_native(input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, 
     out = out.view(-1, in_h * up_y, in_w * up_x, minor)
 
     out = F.pad(out, [0, 0, max(pad_x0, 0), max(pad_x1, 0), max(pad_y0, 0), max(pad_y1, 0)])
-    out = out[:, max(-pad_y0, 0):out.shape[1] - max(-pad_y1, 0), max(-pad_x0, 0):out.shape[2] - max(-pad_x1, 0), :, ]
+    out = out[
+        :,
+        max(-pad_y0, 0) : out.shape[1] - max(-pad_y1, 0),
+        max(-pad_x0, 0) : out.shape[2] - max(-pad_x1, 0),
+        :,
+    ]
 
     out = out.permute(0, 3, 1, 2)
     out = out.reshape([-1, 1, in_h * up_y + pad_y0 + pad_y1, in_w * up_x + pad_x0 + pad_x1])
