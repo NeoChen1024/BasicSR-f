@@ -151,6 +151,8 @@ def train_pipeline(root_path):
     data_timer, iter_timer = AvgTimer(), AvgTimer()
     start_time = time.time()
 
+    accum_steps = opt['train'].get('accum_steps', 1)
+
     for epoch in range(start_epoch, total_epochs + 1):
         train_sampler.set_epoch(epoch)
         prefetcher.reset()
@@ -162,16 +164,28 @@ def train_pipeline(root_path):
             current_iter += 1
             if current_iter > total_iters:
                 break
-            # update learning rate
-            model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
-            # training
-            model.feed_data(train_data)
-            model.optimize_parameters(current_iter)
+
+            # gradient accumulation inner loop
+            for sub_step in range(accum_steps):
+                if sub_step > 0:
+                    # fetch next batch for accumulation
+                    train_data = prefetcher.next()
+                    if train_data is None:
+                        break
+                model.feed_data(train_data)
+                model.optimize_parameters(
+                    current_iter,
+                    zero_grad=(sub_step == 0),
+                    step=(sub_step == accum_steps - 1),
+                    accum_steps=accum_steps)
+
             iter_timer.record()
             if current_iter == 1:
                 # reset start time in msg_logger for more accurate eta_time
                 # not work in resume mode
                 msg_logger.reset_start_time()
+            # update learning rate
+            model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
             # log
             if current_iter % opt['logger']['print_freq'] == 0:
                 log_vars = {'epoch': epoch, 'iter': current_iter}
