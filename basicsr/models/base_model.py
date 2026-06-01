@@ -101,7 +101,10 @@ class BaseModel():
         return net
 
     def get_optimizer(self, optim_type, params, lr, **kwargs):
-        if optim_type == 'Adam':
+        if optim_type == 'ProdigyPlusScheduleFree':
+            from prodigyplus.prodigy_plus_schedulefree import ProdigyPlusScheduleFree
+            optimizer = ProdigyPlusScheduleFree(params, lr=lr, **kwargs)
+        elif optim_type == 'Adam':
             optimizer = torch.optim.Adam(params, lr, **kwargs)
         elif optim_type == 'AdamW':
             optimizer = torch.optim.AdamW(params, lr, **kwargs)
@@ -122,13 +125,16 @@ class BaseModel():
     def setup_schedulers(self):
         """Set up schedulers."""
         train_opt = self.opt['train']
-        scheduler_type = train_opt['scheduler'].pop('type')
+        scheduler_opt = train_opt.get('scheduler')
+        if scheduler_opt is None or not scheduler_opt:
+            return
+        scheduler_type = scheduler_opt.pop('type')
         if scheduler_type in ['MultiStepLR', 'MultiStepRestartLR']:
             for optimizer in self.optimizers:
-                self.schedulers.append(lr_scheduler.MultiStepRestartLR(optimizer, **train_opt['scheduler']))
+                self.schedulers.append(lr_scheduler.MultiStepRestartLR(optimizer, **scheduler_opt))
         elif scheduler_type == 'CosineAnnealingRestartLR':
             for optimizer in self.optimizers:
-                self.schedulers.append(lr_scheduler.CosineAnnealingRestartLR(optimizer, **train_opt['scheduler']))
+                self.schedulers.append(lr_scheduler.CosineAnnealingRestartLR(optimizer, **scheduler_opt))
         else:
             raise NotImplementedError(f'Scheduler {scheduler_type} is not implemented yet.')
 
