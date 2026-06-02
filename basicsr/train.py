@@ -4,6 +4,7 @@ import math
 import time
 import torch
 from os import path as osp
+from tqdm import tqdm
 
 from basicsr.data import build_dataloader, build_dataset
 from basicsr.data.data_sampler import EnlargedSampler
@@ -167,6 +168,10 @@ def train_pipeline(root_path):
 
     accum_steps = opt["train"].get("accum_steps", 1)
 
+    pbar = tqdm(total=total_iters, initial=current_iter,
+                desc=f"Training {opt['name']}", unit="step",
+                dynamic_ncols=True, miniters=1)
+
     for epoch in range(start_epoch, total_epochs + 1):
         train_sampler.set_epoch(epoch)
         prefetcher.reset()
@@ -196,14 +201,28 @@ def train_pipeline(root_path):
                 # reset start time in msg_logger for more accurate eta_time
                 # not work in resume mode
                 msg_logger.reset_start_time()
+
             # update learning rate
             model.update_learning_rate(current_iter, warmup_iter=opt["train"].get("warmup_iter", -1))
+
+            # update tqdm progress bar every step
+            cur_log = model.get_current_log()
+            postfix = {}
+            if "l_pix" in cur_log:
+                postfix["loss"] = f'{cur_log["l_pix"]:.4f}'
+            if "lr_true" in cur_log:
+                postfix["lr"] = f'{cur_log["lr_true"]:.6f}'
+            if "vram_gb" in cur_log:
+                postfix["vram"] = f'{cur_log["vram_gb"]:.1f}G'
+            pbar.set_postfix(postfix)
+            pbar.update()
+
             # log
             if current_iter % opt["logger"]["print_freq"] == 0:
                 log_vars = {"epoch": epoch, "iter": current_iter}
                 log_vars.update({"lrs": model.get_current_learning_rate()})
                 log_vars.update({"time": iter_timer.get_avg_time(), "data_time": data_timer.get_avg_time()})
-                log_vars.update(model.get_current_log())
+                log_vars.update(cur_log)
                 msg_logger(log_vars)
 
             # save models and training states
@@ -225,6 +244,7 @@ def train_pipeline(root_path):
 
     # end of epoch
 
+    pbar.close()
     consumed_time = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     logger.info(f"End of training. Time consumed: {consumed_time}")
     logger.info("Save the latest model.")
