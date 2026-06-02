@@ -32,6 +32,20 @@ class SRModel(BaseModel):
         if self.is_train:
             self.init_training_settings()
 
+        # torch.compile (optional, controlled by YAML)
+        compile_opt = opt.get("compile", None)
+        if compile_opt:
+            import torch
+            mode = compile_opt.get("mode", "default")
+            backend = compile_opt.get("backend", None)
+            dynamic = compile_opt.get("dynamic", False)
+            kwargs = dict(dynamic=dynamic)
+            if mode != "default":
+                kwargs["mode"] = mode
+            if backend:
+                kwargs["backend"] = backend
+            self.net_g = torch.compile(self.net_g, **kwargs)
+
     def init_training_settings(self):
         self.net_g.train()
         train_opt = self.opt["train"]
