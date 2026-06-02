@@ -111,6 +111,11 @@ def train_pipeline(root_path):
     torch.backends.cudnn.benchmark = True
     # torch.backends.cudnn.deterministic = True
 
+    # TensorFloat32 (Ampere/Ada GPUs): ~8x matmul throughput, same dynamic range as FP32
+    if opt.get("tf32"):
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+
     # load resume states if necessary
     resume_state = load_resume_state(opt)
     # mkdir for experiments and logger
