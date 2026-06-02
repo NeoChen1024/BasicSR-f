@@ -211,7 +211,7 @@ def train_pipeline(root_path):
             if "l_pix" in cur_log:
                 postfix["loss"] = f'{cur_log["l_pix"]:.4f}'
             if "lr_true" in cur_log:
-                postfix["lr"] = f'{cur_log["lr_true"]:.6f}'
+                postfix["lr"] = f'{cur_log["lr_true"]:.3e}'
             if "vram_gb" in cur_log:
                 postfix["vram"] = f'{cur_log["vram_gb"]:.1f}G'
             pbar.set_postfix(postfix)
