@@ -39,7 +39,7 @@ class FFHQDataset(data.Dataset):
             if not self.gt_folder.endswith(".lmdb"):
                 raise ValueError("'dataroot_gt' should end with '.lmdb', but received {self.gt_folder}")
             with open(osp.join(self.gt_folder, "meta_info.txt")) as fin:
-                self.paths = [line.split(".")[0] for line in fin]
+                self.paths = [line.rsplit(".", 1)[0] for line in fin]
         else:
             # FFHQ has 70000 images in total
             self.paths = [osp.join(self.gt_folder, f"{v:08d}.png") for v in range(70000)]
