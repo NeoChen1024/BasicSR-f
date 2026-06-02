@@ -208,8 +208,8 @@ def train_pipeline(root_path):
             # update tqdm progress bar every step
             cur_log = model.get_current_log()
             postfix = {}
-            if "l_pix" in cur_log:
-                postfix["loss"] = f'{cur_log["l_pix"]:.4f}'
+            if "l_pix_ema" in cur_log:
+                postfix["loss"] = f'{cur_log["l_pix_ema"]:.4f}'
             if "lr_true" in cur_log:
                 postfix["lr"] = f'{cur_log["lr_true"]:.3e}'
             pbar.set_postfix(postfix)
