@@ -142,10 +142,12 @@ class BaseModel:
 
     def get_bare_model(self, net):
         """Get bare model, especially under wrapping with
-        DistributedDataParallel or DataParallel.
+        DistributedDataParallel, DataParallel, or torch.compile.
         """
         if isinstance(net, (DataParallel, DistributedDataParallel)):
             net = net.module
+        if hasattr(net, "_orig_mod"):
+            net = net._orig_mod
         return net
 
     @master_only
