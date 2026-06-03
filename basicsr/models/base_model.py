@@ -102,7 +102,11 @@ class BaseModel:
         return net
 
     def get_optimizer(self, optim_type, params, lr, **kwargs):
-        if optim_type == "ProdigyPlusScheduleFree":
+        if optim_type == "Prodigy":
+            from prodigyopt import Prodigy
+
+            optimizer = Prodigy(params, lr=lr, **kwargs)
+        elif optim_type == "ProdigyPlusScheduleFree":
             from prodigyplus.prodigy_plus_schedulefree import ProdigyPlusScheduleFree
 
             optimizer = ProdigyPlusScheduleFree(params, lr=lr, **kwargs)
